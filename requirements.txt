@@ -1,0 +1,4 @@
+streamlit
+gspread==5.12.4
+google-auth
+docxtpl
