@@ -138,7 +138,6 @@ def main():
     def hybrid_selector_label(label, category, key_prefix):
         people = [s for s in data_dict['signatories'] if str(s.get('Category', '')).strip().lower() == category.lower()]
         opts = ["Ввести вручну..."] + [str(p['Label']) for p in people]
-        
         st.selectbox(f"Оберіть зі списку ({label})", opts, key=f"{key_prefix}_sel", on_change=update_person_fields, args=(key_prefix, people))
         st.text_input(f"Посада ({label})", key=f"{key_prefix}_pos")
         st.text_input(f"ПІБ ({label})", key=f"{key_prefix}_name")
@@ -178,15 +177,22 @@ def main():
         }
         context.update(results_rt)
 
-        # --- НОВА ЛОГІКА ДСНС (Список) ---
+        # --- РОЗУМНЕ ЗАПОВНЕННЯ ДСНС ---
         dsns_list = []
         for lbl in sel_dsns_labels:
             p = dsns_map.get(lbl)
-            if p:
-                dsns_list.append({'pos': p.get('Position', ''), 'name': p.get('Name', '')})
+            if p: dsns_list.append(p)
         
-        # Передаємо список у шаблон
-        context['dsns_list'] = dsns_list
+        for i in range(1, 4):
+            if i <= len(dsns_list):
+                p = dsns_list[i-1]
+                context[f'DSNS_POS_{i}'] = p.get('Position', '')
+                context[f'DSNS_NAME_{i}'] = p.get('Name', '')
+                context[f'DSNS_SIG_{i}'] = "_______" # Є людина - є лінія
+            else:
+                context[f'DSNS_POS_{i}'] = ""
+                context[f'DSNS_NAME_{i}'] = ""
+                context[f'DSNS_SIG_{i}'] = "" # Нема людини - нема лінії
 
         try:
             doc = DocxTemplate("template.docx")
